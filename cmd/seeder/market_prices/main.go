@@ -51,7 +51,7 @@ type SubRegion struct {
 	DeletedAt *time.Time
 }
 
-// Transactions table
+// Seafoods table
 type Seafood struct {
 	ID          uint `gorm:"primaryKey"`
 	SpeciesID   uint

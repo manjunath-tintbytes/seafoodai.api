@@ -11,7 +11,7 @@ import (
 func GetMigrations() []*gormigrate.Migration {
 	return []*gormigrate.Migration{
 		{
-			ID: "202409170001_create_initial_tables",
+			ID: "202409170006_create_initial_tables",
 			Migrate: func(tx *gorm.DB) error {
 				// Create species table
 				if err := tx.AutoMigrate(&models.Species{}); err != nil {
@@ -43,10 +43,34 @@ func GetMigrations() []*gormigrate.Migration {
 					return err
 				}
 
+				// Create landing_names
+				if err := tx.AutoMigrate(&models.LandingName{}); err != nil {
+					return err
+				}
+
+				// Create landing_ports
+				if err := tx.AutoMigrate(&models.LandingPort{}); err != nil {
+					return err
+				}
+
+				// Create landings table
+				if err := tx.AutoMigrate(&models.Landing{}); err != nil {
+					return err
+				}
+
 				return nil
 			},
 			Rollback: func(tx *gorm.DB) error {
 				// Drop tables in reverse order due to foreign key constraints
+				if err := tx.Migrator().DropTable(&models.Landing{}); err != nil {
+					return err
+				}
+				if err := tx.Migrator().DropTable(&models.LandingPort{}); err != nil {
+					return err
+				}
+				if err := tx.Migrator().DropTable(&models.LandingName{}); err != nil {
+					return err
+				}
 				if err := tx.Migrator().DropTable(&models.Price{}); err != nil {
 					return err
 				}
