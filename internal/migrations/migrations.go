@@ -92,5 +92,14 @@ func GetMigrations() []*gormigrate.Migration {
 				return nil
 			},
 		},
+		{
+			ID: "20251025_create_market_signals_table",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.AutoMigrate(&models.MarketSignal{})
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Migrator().DropTable(&models.MarketSignal{})
+			},
+		},
 	}
 }
