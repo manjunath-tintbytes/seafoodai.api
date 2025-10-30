@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"time"
@@ -179,6 +181,14 @@ func LoadCSV(filename string) ([]*PriceCSV, error) {
 		return nil, err
 	}
 	defer file.Close()
+
+	// Tell gocsv to use semicolon instead of comma
+	gocsv.SetCSVReader(func(in io.Reader) gocsv.CSVReader {
+		r := csv.NewReader(in)
+		r.Comma = ';' // ✅ Use semicolon as field separator
+		r.LazyQuotes = true
+		return r
+	})
 
 	var records []*PriceCSV
 	if err := gocsv.UnmarshalFile(file, &records); err != nil {

@@ -101,5 +101,14 @@ func GetMigrations() []*gormigrate.Migration {
 				return tx.Migrator().DropTable(&models.MarketSignal{})
 			},
 		},
+		{
+			ID: "20251029_create_quota_table",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.AutoMigrate(&models.Quota{})
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Migrator().DropTable(&models.Quota{})
+			},
+		},
 	}
 }
