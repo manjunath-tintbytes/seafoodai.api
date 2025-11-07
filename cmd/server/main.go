@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/manjunath-tintbytes/seafoodai.api/internal/config"
@@ -11,7 +13,13 @@ import (
 func main() {
 	// Load environment variables
 	config.LoadEnv()
-	gin.SetMode(gin.ReleaseMode)
+	mode := os.Getenv("GIN_MODE")
+	if mode == "" {
+		mode = "debug"
+	}
+
+	// Set Gin mode
+	gin.SetMode(mode)
 
 	// Connect to the database
 	db := database.SetupDB()
