@@ -58,10 +58,26 @@ func GetMigrations() []*gormigrate.Migration {
 					return err
 				}
 
+				// Create market signals
+				if err := tx.AutoMigrate(&models.MarketSignal{}); err != nil {
+					return err
+				}
+
+				// Create quota tables
+				if err := tx.AutoMigrate(&models.Quota{}); err != nil {
+					return err
+				}
+
 				return nil
 			},
 			Rollback: func(tx *gorm.DB) error {
 				// Drop tables in reverse order due to foreign key constraints
+				if err := tx.Migrator().DropTable(&models.Quota{}); err != nil {
+					return err
+				}
+				if err := tx.Migrator().DropTable(&models.MarketSignal{}); err != nil {
+					return err
+				}
 				if err := tx.Migrator().DropTable(&models.Landing{}); err != nil {
 					return err
 				}
@@ -90,24 +106,6 @@ func GetMigrations() []*gormigrate.Migration {
 					return err
 				}
 				return nil
-			},
-		},
-		{
-			ID: "20251025_create_market_signals_table",
-			Migrate: func(tx *gorm.DB) error {
-				return tx.AutoMigrate(&models.MarketSignal{})
-			},
-			Rollback: func(tx *gorm.DB) error {
-				return tx.Migrator().DropTable(&models.MarketSignal{})
-			},
-		},
-		{
-			ID: "20251029_create_quota_table",
-			Migrate: func(tx *gorm.DB) error {
-				return tx.AutoMigrate(&models.Quota{})
-			},
-			Rollback: func(tx *gorm.DB) error {
-				return tx.Migrator().DropTable(&models.Quota{})
 			},
 		},
 	}
