@@ -11,6 +11,7 @@ import (
 func main() {
 	// Load environment variables
 	config.LoadEnv()
+	gin.SetMode(gin.ReleaseMode)
 
 	// Connect to the database
 	db := database.SetupDB()
