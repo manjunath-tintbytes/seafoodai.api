@@ -9,13 +9,10 @@ import (
 
 func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	r.GET("/", handlers.WelcomeHandler(db))
-	// r.GET("/market-prices", handlers.GetMarketPricesOptimized(db))
-	// r.GET("/landings", handlers.GetLandings(db))
-	// r.GET("/market-signals", handlers.GetMarketSignals(db))
-	// r.GET("/quotas", handlers.GetQuotas(db))
-	// Public routes
 	r.POST("/signup", handlers.Signup)
 	r.POST("/login", handlers.Login)
+	r.POST("/forgot-password", handlers.ForgotPassword)
+	r.POST("/reset-password", handlers.ResetPassword)
 
 	// Protected routes
 	protected := r.Group("")

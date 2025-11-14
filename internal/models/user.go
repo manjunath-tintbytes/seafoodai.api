@@ -43,3 +43,21 @@ func (u *User) CheckPassword(password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 	return err == nil
 }
+
+type ForgotPasswordRequest struct {
+	Email string `json:"email" binding:"required,email"`
+}
+
+type ResetPasswordRequest struct {
+	Token    string `json:"token" binding:"required"`
+	Password string `json:"password" binding:"required,min=6"`
+}
+
+type PasswordResetToken struct {
+	ID        int       `json:"id"`
+	UserID    int       `json:"user_id"`
+	Token     string    `json:"token"`
+	ExpiresAt time.Time `json:"expires_at"`
+	Used      bool      `json:"used"`
+	CreatedAt time.Time `json:"created_at"`
+}

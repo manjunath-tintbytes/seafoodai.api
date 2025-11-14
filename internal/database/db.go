@@ -42,18 +42,27 @@ func SetupDB() *gorm.DB {
 	sqlDB.SetConnMaxLifetime(5 * time.Minute)
 
 	// Create users table
-	createTableQuery := `
+	createUsersTable := `
 	CREATE TABLE IF NOT EXISTS users (
 		id SERIAL PRIMARY KEY,
 		email VARCHAR(255) UNIQUE NOT NULL,
 		password VARCHAR(255) NOT NULL,
 		name VARCHAR(255) NOT NULL,
-		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-		deleted_at TIMESTAMP NULL
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 	)`
+	sqlDB.Exec(createUsersTable)
 
-	sqlDB.Exec(createTableQuery)
+	// Create password_reset_tokens table
+	createTokensTable := `
+	CREATE TABLE IF NOT EXISTS password_reset_tokens (
+		id SERIAL PRIMARY KEY,
+		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		token VARCHAR(255) UNIQUE NOT NULL,
+		expires_at TIMESTAMP NOT NULL,
+		used BOOLEAN DEFAULT FALSE,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	)`
+	sqlDB.Exec(createTokensTable)
 
 	return db
 }
@@ -126,4 +135,39 @@ func GetUserByID(id int) (*models.User, error) {
 		return nil, err
 	}
 	return user, nil
+}
+
+func CreatePasswordResetToken(userID int, token string, expiresAt time.Time) error {
+	query := `INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)`
+	_, err := sqlDB.Exec(query, userID, token, expiresAt)
+	return err
+}
+
+func GetPasswordResetToken(token string) (*models.PasswordResetToken, error) {
+	resetToken := &models.PasswordResetToken{}
+	query := `SELECT id, user_id, token, expires_at, used, created_at FROM password_reset_tokens WHERE token = $1`
+	err := sqlDB.QueryRow(query, token).Scan(
+		&resetToken.ID,
+		&resetToken.UserID,
+		&resetToken.Token,
+		&resetToken.ExpiresAt,
+		&resetToken.Used,
+		&resetToken.CreatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return resetToken, nil
+}
+
+func MarkTokenAsUsed(token string) error {
+	query := `UPDATE password_reset_tokens SET used = true WHERE token = $1`
+	_, err := sqlDB.Exec(query, token)
+	return err
+}
+
+func UpdateUserPassword(userID int, hashedPassword string) error {
+	query := `UPDATE users SET password = $1 WHERE id = $2`
+	_, err := sqlDB.Exec(query, hashedPassword, userID)
+	return err
 }
